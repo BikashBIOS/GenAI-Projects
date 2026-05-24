@@ -1,0 +1,12 @@
+pandas
+numpy
+ipykernel
+langchain
+langsmith
+dotenv
+langchain_groq
+langchain_core
+fastapi
+uvicorn
+langserve
+sse_starlette
