@@ -15,3 +15,6 @@ langchain_chroma
 langchain_huggingface
 sentence-transformers
 torch
+bs4
+langchain_classic
+

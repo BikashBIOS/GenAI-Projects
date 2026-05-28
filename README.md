@@ -52,3 +52,19 @@ Demonstrates different methods to query the collection based on contextual and s
 3. Converting Vector Stores to Retrievers
 While VectorStore objects store and query data, they lack the standardized Runnable methods needed to link directly into LangChain Expression Language (LCEL) chains. A Retriever acts as a unified data fetching interface.
 4. The End-to-End Retrieval-Augmented Generation (RAG) PipelineThis ties everything together into a functional RAG pipeline architecture: User Prompt -> Context Retrieval -> Prompt Construction -> LLM Synthesis.
+
+
+### 2. Conversational ChatBot Q&A (conversationqa.ipynb) 
+##### In many Q&A applications we want to allow the user to have a back-and-forth conversation, meaning the application needs some sort of "memory" of past questions and answers, and some logic for incorporating those into its current thinking. In this guide we focus on adding logic for incorporating historical messages. 
+(Detailed Code Summary in the code file)
+1. Import all necessary libraries along with all the tokens.
+2. Implement bs4 to load the website from which you want to retrieve data and make your q&a bot. 
+3. Split the text into chunks and store into Vector store.
+4. Create a Prompt Template.
+5. Create the chain with the llm model and documents and then push the chain and retriever in rag chain.
+6. Then to retain the history of the chat, implement history_chat_retriever as shown in code with the contextual prompt.
+7. Then again create the prompt using chat_history and then create rag chain to test and invoke prompts.
+8. Now if you provide one prompt first and then you provide any prompt related to the 1st prompt, it will answer based on your 1st context. 
+9. Then lastly, automate the history management using the session store.
+10. Then create the conversational rag chain using the message_history and by that we can invoke 1st message and 2nd message (that will be based upon 1st message). In this way, we can create a chain of conversation without losing any previous chat history.
+
