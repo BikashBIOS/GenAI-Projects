@@ -1,981 +1,1136 @@
-# 🤖 GenAI Projects — Comprehensive Technical Documentation
+# 🤖 GenAI Projects — LangChain Learning Series
 
-> **Repository:** [BikashBIOS/GenAI-Projects](https://github.com/BikashBIOS/GenAI-Projects)
-> **Author:** BikashBIOS
-> **Stack:** Python · LangChain · Groq (LLaMA 3.1) · ChromaDB · HuggingFace Embeddings · FastAPI · LangServe · PyTorch · TensorFlow
+> A structured collection of Generative AI applications built with LangChain, Groq, HuggingFace, ChromaDB, and FastAPI. This repository progressively teaches core GenAI engineering patterns — from a single LLM call all the way to a full conversational RAG pipeline with persistent memory.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-1. [Project Overview](#1-project-overview)
-2. [Repository Structure](#2-repository-structure)
-3. [Data Scenario & Description](#3-data-scenario--description)
-4. [Structured Data Analysis](#4-structured-data-analysis)
-5. [Data Visualisation Pipeline](#5-data-visualisation-pipeline)
-6. [Data Cleaning & Preprocessing](#6-data-cleaning--preprocessing)
-7. [ML Algorithms Used](#7-ml-algorithms-used)
-8. [Model Training & Testing Split](#8-model-training--testing-split)
-9. [TensorFlow Integration](#9-tensorflow-integration)
-10. [Confusion Matrix & Classification Report](#10-confusion-matrix--classification-report)
-11. [Accuracy, Precision, Recall & F1 Score](#11-accuracy-precision-recall--f1-score)
-12. [Prediction Pipeline](#12-prediction-pipeline)
-13. [Model Evaluation Summary](#13-model-evaluation-summary)
-14. [Environment Setup & Installation](#14-environment-setup--installation)
-15. [Project-by-Project Breakdown](#15-project-by-project-breakdown)
-16. [Key Findings & Conclusions](#16-key-findings--conclusions)
-
----
-
-## 1. Project Overview
-
-This repository is a **hands-on Generative AI learning suite** built using LangChain, Groq-accelerated LLMs, and modern NLP tooling. It progresses from a simple LLM translation app all the way to a multi-turn Conversational Q&A system with persistent memory and Retrieval-Augmented Generation (RAG).
-
-| Property | Details |
-|---|---|
-| **Primary Goal** | Learn and demonstrate core GenAI engineering patterns |
-| **LLM Backend** | Groq hardware-accelerated `llama-3.1-8b-instant` |
-| **Embedding Model** | HuggingFace `sentence-transformers` |
-| **Vector Store** | ChromaDB (in-memory & persistent) |
-| **Framework** | LangChain + LCEL (LangChain Expression Language) |
-| **Serving Layer** | FastAPI + LangServe (REST API) |
-| **Deep Learning** | PyTorch (via sentence-transformers), TensorFlow (evaluation layer) |
-| **Language** | Python 3.10+ |
+- [Repository Overview](#repository-overview)
+- [Project Map](#project-map)
+- [Prerequisites & Setup](#prerequisites--setup)
+- [requirements.txt — Every Package Explained](#requirementstxt--every-package-explained)
+- [Core Concepts Primer](#core-concepts-primer)
+  - [What is LCEL?](#what-is-lcel)
+  - [What is RAG?](#what-is-rag)
+  - [What are Embeddings & Vector Stores?](#what-are-embeddings--vector-stores)
+  - [What is Conversation Memory?](#what-is-conversation-memory)
+- [Project 1 — Simple LLM with LCEL (`simplellmLCEL.ipynb`)](#project-1--simple-llm-with-lcel-simplellmlcelipynb)
+- [Project 2 — LCEL App as a REST API (`serve.py`)](#project-2--lcel-app-as-a-rest-api-servepy)
+- [Project 3 — Stateful Chatbot with Memory (`1-chatbots.ipynb`)](#project-3--stateful-chatbot-with-memory-1-chatbotsipynb)
+- [Project 4 — Vector Store & Retriever (`vectorretriever.ipynb`)](#project-4--vector-store--retriever-vectorretrieveripynb)
+- [Project 5 — Conversational RAG Q&A (`conversationqa.ipynb`)](#project-5--conversational-rag-qa-conversationqaipynb)
+- [How the Projects Build on Each Other](#how-the-projects-build-on-each-other)
+- [Architecture Diagrams](#architecture-diagrams)
 
 ---
 
-## 2. Repository Structure
+## Repository Overview
+
+This repo is a hands-on learning series for building GenAI applications. Each file introduces new concepts that build directly on the previous one:
+
+| File | Concept Introduced | Complexity |
+|---|---|---|
+| `simplellmLCEL.ipynb` | Single LLM call, prompt templates, LCEL pipe chains | ⭐ Beginner |
+| `serve.py` | Serving an LCEL chain as a REST API with FastAPI + LangServe | ⭐⭐ Beginner+ |
+| `1-chatbots.ipynb` | Stateful multi-turn chatbot, session memory, token trimming | ⭐⭐ Intermediate |
+| `vectorretriever.ipynb` | Document embeddings, ChromaDB vector store, retrievers | ⭐⭐⭐ Intermediate |
+| `conversationqa.ipynb` | Full RAG pipeline + conversation history + automated session store | ⭐⭐⭐⭐ Advanced |
+
+---
+
+## Project Map
 
 ```
 GenAI-Projects/
-│
-├── simplellmLCEL.ipynb        # Project 1 — Simple LLM Translation Chain
-├── serve.py                   # FastAPI + LangServe server for Project 1
-├── 1-chatbots.ipynb           # Project 2 — Stateful Chatbot with Memory
-├── vectorretriever.ipynb      # Project 3 — Vector Store & Retriever (RAG Core)
-├── conversationqa.ipynb       # Project 4 — Conversational Q&A with History
-├── requirements.txt           # All dependencies
-├── .gitignore
-└── README.md
+├── simplellmLCEL.ipynb     # Project 1 — basic LLM + LCEL translation app
+├── serve.py                # Project 2 — same app served as REST API
+├── 1-chatbots.ipynb        # Project 3 — stateful chatbot with memory
+├── vectorretriever.ipynb   # Project 4 — embeddings, Chroma, RAG retriever
+├── conversationqa.ipynb    # Project 5 — conversational RAG Q&A bot
+├── requirements.txt        # All Python dependencies
+└── .gitignore
 ```
 
 ---
 
-## 3. Data Scenario & Description
+## Prerequisites & Setup
 
-### 3.1 What Data Does This Project Use?
+```bash
+# 1. Clone the repo
+git clone https://github.com/BikashBIOS/GenAI-Projects.git
+cd GenAI-Projects
 
-Unlike traditional ML projects, this repository operates on **three types of unstructured textual data**:
+# 2. Create and activate a virtual environment
+python -m venv genaienv
+source genaienv/bin/activate       # Linux/Mac
+# genaienv\Scripts\activate        # Windows
 
-| Data Type | Source | Used In |
-|---|---|---|
-| **Free-text User Prompts** | Runtime user input | All projects |
-| **Web-scraped Documents** | BeautifulSoup (`bs4`) HTML scraping | `conversationqa.ipynb` |
-| **In-memory Document Corpus** | Manually created LangChain `Document` objects | `vectorretriever.ipynb` |
-| **Conversation History (Chat Log)** | Session-based message arrays | `1-chatbots.ipynb`, `conversationqa.ipynb` |
+# 3. Install all dependencies
+pip install -r requirements.txt
 
-### 3.2 Data Schema
+# 4. Create your .env file
+cat > .env << 'EOF'
+GROQ_API_KEY=your_groq_api_key_here
+HF_TOKEN=your_huggingface_token_here
+LANGCHAIN_API_KEY=your_langchain_api_key_here
+LANGCHAIN_PROJECT=GenAI-Projects
+LANGCHAIN_TRACING_V2=true
+EOF
 
-**Document Object Schema (LangChain)**
+# 5. Open Jupyter to run the notebooks
+jupyter lab
+```
+
+**Where to get API keys:**
+- **Groq:** https://console.groq.com — fast, free LLM inference (LLaMA, Mixtral etc.)
+- **HuggingFace:** https://huggingface.co/settings/tokens — needed for HuggingFace embeddings
+- **LangSmith:** https://smith.langchain.com — optional tracing/observability for LangChain
+
+---
+
+## requirements.txt — Every Package Explained
+
+```
+pandas              # Data manipulation — used for tabular data handling
+numpy               # Numerical computing — vector math underpinning embeddings
+ipykernel           # Jupyter notebook kernel — allows notebooks to run
+langchain           # Core LangChain framework — chains, prompts, runnables
+langsmith           # LangChain's observability/tracing tool — traces chains
+dotenv              # Load .env files into os.environ at runtime
+langchain_groq      # LangChain adapter for Groq's API (fast LLaMA inference)
+langchain_core      # Core LangChain primitives: messages, runnables, parsers
+fastapi             # Modern async Python web framework (serves the LCEL chain)
+uvicorn             # ASGI server — runs the FastAPI app
+langserve           # LangChain's built-in FastAPI integration to expose chains
+sse_starlette       # Server-Sent Events support for streaming LangServe responses
+langchain_community # Community integrations: WebBaseLoader, ChatMessageHistory
+langchain_chroma    # LangChain adapter for ChromaDB vector database
+langchain_huggingface # LangChain adapter for HuggingFace embedding models
+sentence-transformers # The library powering the all-MiniLM-L6-v2 embedding model
+torch               # PyTorch — required runtime for sentence-transformers
+bs4                 # BeautifulSoup4 — HTML parsing used by WebBaseLoader
+langchain_classic   # Classic LangChain chain builders (RAG, history-aware retriever)
+```
+
+---
+
+## Core Concepts Primer
+
+Before diving into the code, here are the foundational ideas powering every project in this repo.
+
+### What is LCEL?
+
+**LangChain Expression Language (LCEL)** is a declarative way to compose LangChain components using the `|` (pipe) operator. Each component must implement the `Runnable` interface, which provides `.invoke()`, `.batch()`, `.stream()` methods.
+
+```
+prompt | model | parser
+  ↓         ↓        ↓
+formats    calls    extracts
+input      LLM      text
+```
+
+The pipe passes the output of the left side as input to the right side. This means you can build complex chains in a single readable line — and every piece is swappable.
+
+### What is RAG?
+
+**Retrieval-Augmented Generation (RAG)** is a technique that gives the LLM access to your own documents/data by:
+1. Breaking your documents into chunks
+2. Embedding each chunk as a vector (a list of numbers representing meaning)
+3. Storing those vectors in a database
+4. At query time: embedding the user's question, finding the most similar document chunks, and injecting them into the LLM prompt as context
+
+Without RAG, the LLM only knows what it was trained on. With RAG, it can answer questions about your specific data.
+
+```
+User Question
+     ↓
+Embed question → [0.1, 0.8, 0.3, ...]
+     ↓
+Search vector DB for similar chunks
+     ↓
+Inject found chunks into prompt
+     ↓
+LLM answers using that context
+```
+
+### What are Embeddings & Vector Stores?
+
+An **embedding** is a mathematical transformation of text into a dense vector of numbers, where semantically similar texts produce similar vectors. The `all-MiniLM-L6-v2` model used in this project maps any text to a 384-dimensional vector.
+
+A **vector store** (like ChromaDB) is a database optimized for storing and searching these vectors by cosine similarity or L2 distance — finding the documents that mean the same thing as your query, not just those that share keywords.
+
+### What is Conversation Memory?
+
+By default, each LLM call is completely stateless — it has no knowledge of what was said before. **Conversation memory** solutions in LangChain solve this by maintaining a list of past `HumanMessage` and `AIMessage` objects and injecting them into every new prompt. The challenge is that token limits mean you can't keep the full history forever — which is why token trimming becomes important as conversations grow.
+
+---
+
+## Project 1 — Simple LLM with LCEL (`simplellmLCEL.ipynb`)
+
+**Goal:** Build a text translation app using a single LCEL chain.
+
+**Concepts introduced:** LLM setup, direct model invocation, output parsing, prompt templates, LCEL pipe operator.
+
+---
+
+### Cell 0 — Environment Setup
 
 ```python
-Document(
-    page_content = str,      # Raw text content (chunk of a larger doc)
-    metadata     = dict      # Source URL, chunk index, timestamp, etc.
+import os
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+`load_dotenv()` scans for a `.env` file in the current directory and loads all key=value pairs as environment variables. This means `os.getenv("GROQ_API_KEY")` will work in subsequent cells without hardcoding secrets into your notebook.
+
+---
+
+### Cell 1 — Initialize the LLM
+
+```python
+from langchain_groq import ChatGroq
+model = ChatGroq(model="llama-3.1-8b-instant", groq_api_key=os.getenv("GROQ_API_KEY"))
+```
+
+`ChatGroq` is LangChain's adapter class for Groq's API. **Groq** is an AI inference company that runs open-source models (LLaMA, Mixtral etc.) on custom hardware called LPUs — much faster than GPU-based providers. `llama-3.1-8b-instant` is Meta's 8-billion-parameter LLaMA 3.1 model, optimized for fast responses.
+
+The `model` object is a `Runnable` — it implements `.invoke()` and can be used inside LCEL chains.
+
+---
+
+### Cell 2 — Direct Model Invocation
+
+```python
+from langchain_core.messages import HumanMessage, SystemMessage
+
+messages = [
+    SystemMessage(content="Translate the following from English to French"),
+    HumanMessage(content="Hello How are You?")
+]
+
+result = model.invoke(messages)
+```
+
+`SystemMessage` sets the model's role and instructions — it's the first item in the prompt, telling the model *how to behave*. `HumanMessage` represents the user's input. Passing a list of messages to `model.invoke()` sends them all as a structured conversation to the LLM. The returned `result` is an `AIMessage` object containing the model's raw response, including metadata like token usage.
+
+---
+
+### Cell 3 — Output Parser
+
+```python
+from langchain_core.output_parsers import StrOutputParser
+
+parser = StrOutputParser()
+parser.invoke(result)
+```
+
+The raw `AIMessage` from the model contains not just the text but also metadata (token counts, model name, stop reason etc.). `StrOutputParser` extracts just the text content from the `AIMessage` and returns a clean Python string. This is the most basic parser — LangChain also provides `JsonOutputParser`, `PydanticOutputParser`, and others.
+
+---
+
+### Cell 4 — First LCEL Chain (model → parser)
+
+```python
+chain = model | parser
+chain.invoke(messages)
+```
+
+This is LCEL in action. The `|` operator connects two Runnables into a pipeline:
+1. `messages` are passed to `model.invoke()` → produces an `AIMessage`
+2. That `AIMessage` is passed to `parser.invoke()` → produces a clean string
+
+The chain object itself is also a Runnable, so `.invoke()`, `.batch()`, and `.stream()` all work on it.
+
+---
+
+### Cell 5 — Prompt Templates
+
+```python
+from langchain_core.prompts import ChatPromptTemplate
+
+generic_template = "Translate the Following into {language}:"
+
+prompt = ChatPromptTemplate.from_messages(
+    [("system", generic_template), ("user", "{text}")]
 )
 ```
 
-**Chat Message Schema**
-
-```python
-{
-  "role"    : "human" | "ai" | "system",
-  "content" : str,
-  "session_id": str          # For multi-session history management
-}
-```
-
-### 3.3 Data Volume (Estimated)
-
-| Project | Avg. Chunks | Avg. Tokens / Chunk | Vector Dimensions |
-|---|---|---|---|
-| vectorretriever.ipynb | ~10–50 docs | 256–512 tokens | 384 (MiniLM-L6-v2) |
-| conversationqa.ipynb | ~100–500 chunks | 200–400 tokens | 384 (MiniLM-L6-v2) |
-| 1-chatbots.ipynb | N/A (direct LLM) | Dynamic | N/A |
+`ChatPromptTemplate` is a reusable template with variable placeholders using `{curly_brace}` syntax. `from_messages()` takes a list of `(role, template_string)` tuples. The `{language}` and `{text}` slots are filled at runtime when you call `.invoke()`. This separates the structure of the prompt from its dynamic content — you can reuse the same template for French, Spanish, Japanese etc. just by changing the input dict.
 
 ---
 
-## 4. Structured Data Analysis
-
-### 4.1 Embedding Space Analysis
-
-When documents are embedded using `sentence-transformers/all-MiniLM-L6-v2`, each text chunk is mapped to a 384-dimensional dense vector. The distribution of these vectors forms the core of the retrieval engine.
-
-**Key Characteristics:**
-
-| Metric | Value |
-|---|---|
-| Embedding Dimensions | 384 |
-| Distance Metric | Cosine Similarity |
-| Vector Store | ChromaDB |
-| Retrieval Strategy | Top-k Nearest Neighbour (default k=4) |
-| Score Range | 0.0 (unrelated) → 1.0 (identical) |
-
-### 4.2 Query-Document Similarity Scores (Representative Samples)
-
-The table below shows representative cosine similarity scores observed during retrieval testing in `vectorretriever.ipynb`:
-
-| Query | Top Retrieved Chunk (Snippet) | Cosine Similarity |
-|---|---|---|
-| "What is the capital of France?" | "Paris is the capital city of France..." | 0.91 |
-| "Tell me about neural networks" | "A neural network is a computational model..." | 0.87 |
-| "What is LangChain?" | "LangChain is a framework for developing LLM apps..." | 0.93 |
-| "How does RAG work?" | "RAG combines retrieval of context with generation..." | 0.89 |
-| "Unrelated gibberish query" | (lowest-ranked result) | 0.21 |
-
-### 4.3 Token Distribution Analysis
-
-Using the Groq `llama-3.1-8b-instant` context window (128K tokens), the following token usage profiles were observed:
-
-| Component | Avg. Token Count |
-|---|---|
-| System Prompt | 50–100 tokens |
-| Retrieved Context (k=4 chunks) | 800–2,000 tokens |
-| User Query | 10–50 tokens |
-| Chat History (trimmed) | 500–1,500 tokens |
-| LLM Response | 100–600 tokens |
-| **Total Per Request** | **~1,500–4,200 tokens** |
-
-### 4.4 Message History Analytics (`1-chatbots.ipynb`)
-
-The chatbot trims message history using `max_tokens=65536` to stay within context limits:
+### Cell 6 & 7 — Invoking the Prompt
 
 ```python
-trimmer = trim_messages(
-    max_tokens=65536,
-    strategy="last",          # Keep the most recent messages
-    token_counter=model,
-    include_system=True,
-    allow_partial=False,
-    start_on="human",
-)
+result = prompt.invoke({"language": "French", "text": "Hello"})
+result.to_messages()
 ```
 
-| Trim Strategy | Description | Effect |
-|---|---|---|
-| `last` | Retains most recent N tokens | Preserves recent context |
-| `include_system=True` | System prompt always included | Role consistency maintained |
-| `start_on="human"` | Never truncates mid-human-turn | Avoids orphaned AI replies |
+`prompt.invoke()` fills the template variables and returns a `ChatPromptValue` object. `.to_messages()` converts it to the list-of-messages format that the model expects. This intermediate step is useful for debugging — you can inspect the exact messages being sent to the LLM before chaining.
 
 ---
 
-## 5. Data Visualisation Pipeline
-
-### 5.1 Architecture Flow Diagrams
-
-#### Project 1 — Simple LCEL Translation Chain
-
-```
-User Input (text + target_language)
-         │
-         ▼
-┌─────────────────────────────┐
-│   ChatPromptTemplate        │
-│   (system + human roles)    │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│   ChatGroq (llama-3.1-8b)   │
-│   Groq Hardware Accelerated │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│   StrOutputParser           │
-│   (raw → clean string)      │
-└──────────────┬──────────────┘
-               │
-               ▼
-         API Response
-         (FastAPI /chain)
-```
-
-#### Project 4 — RAG + Conversational History Pipeline
-
-```
-User Query
-    │
-    ▼
-[Contextualise Question] ← Chat History
-    │ (Standalone Question Reformulation)
-    ▼
-[Vector Retriever — ChromaDB]
-    │ Top-4 Similar Chunks
-    ▼
-[Prompt Builder]
-    │ System + History + Context + Query
-    ▼
-[ChatGroq LLM]
-    │
-    ▼
-[StrOutputParser]
-    │
-    ▼
-Final Answer + Updated Session History
-```
-
-### 5.2 Embedding Visualisation (Conceptual t-SNE / UMAP)
-
-For projects utilising ChromaDB, a 2D t-SNE projection of the 384-dim embedding space would reveal:
-- **Tight clusters** for topically similar documents
-- **Clear separation** between distinct subject matter
-- **Query vectors** landing close to relevant document clusters
+### Cell 8 — Full LCEL Chain (prompt → model → parser)
 
 ```python
-# Visualisation code (add to notebook)
-from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
-import numpy as np
-
-embeddings = vectorstore._collection.get(include=["embeddings"])["embeddings"]
-tsne = TSNE(n_components=2, perplexity=5, random_state=42)
-reduced = tsne.fit_transform(np.array(embeddings))
-
-plt.figure(figsize=(10, 6))
-plt.scatter(reduced[:, 0], reduced[:, 1], c='steelblue', alpha=0.7)
-plt.title("t-SNE of Document Embeddings (384-dim → 2-dim)")
-plt.xlabel("Component 1")
-plt.ylabel("Component 2")
-plt.tight_layout()
-plt.savefig("embedding_tsne.png")
-plt.show()
+chain = prompt | model | parser
+chain.invoke({"language": "French", "text": "Hello"})
 ```
+
+This is the complete translation pipeline as a single LCEL chain:
+1. `prompt` formats `{"language": "French", "text": "Hello"}` into a list of messages
+2. `model` calls the Groq API and returns an `AIMessage`
+3. `parser` extracts the translated string from the `AIMessage`
+
+The result is `"Bonjour"` (or equivalent). This same three-component pattern (`prompt | model | parser`) is the fundamental building block of nearly every LangChain application.
 
 ---
 
-## 6. Data Cleaning & Preprocessing
+## Project 2 — LCEL App as a REST API (`serve.py`)
 
-### 6.1 Text Splitting Strategy
+**Goal:** Turn the LCEL translation chain into a deployable REST API with auto-generated documentation.
 
-In `conversationqa.ipynb` and `vectorretriever.ipynb`, raw HTML/text is split using LangChain's `RecursiveCharacterTextSplitter`:
+**Concepts introduced:** FastAPI, LangServe, `add_routes`, Uvicorn.
+
+---
+
+### Full Code
 
 ```python
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from fastapi import FastAPI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_groq import ChatGroq
+import os
+import uvicorn
+from langserve import add_routes
+from dotenv import load_dotenv
 
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size    = 1000,    # Max characters per chunk
-    chunk_overlap = 200,     # Overlap to preserve context across chunks
-    separators    = ["\n\n", "\n", " ", ""]
+load_dotenv()
+
+groq_api_key = os.getenv("GROQ_API_KEY")
+model = ChatGroq(model="llama-3.1-8b-instant", groq_api_key=groq_api_key)
+
+system_template = "Translate the Following into {language}:"
+
+prompt_template = ChatPromptTemplate.from_messages(
+    [("system", system_template),
+     ("user", "{text}")]
 )
 
-splits = text_splitter.split_documents(raw_docs)
-```
+parser = StrOutputParser()
 
-| Parameter | Value | Purpose |
-|---|---|---|
-| `chunk_size` | 1000 chars | Balances context vs. retrieval precision |
-| `chunk_overlap` | 200 chars | Preserves sentence context at boundaries |
-| `separators` | `\n\n`, `\n`, ` ` | Prioritises paragraph → line → word splits |
+## Create chain
+chain = prompt_template | model | parser
 
-### 6.2 HTML Cleaning (BeautifulSoup)
-
-In `conversationqa.ipynb`, raw web pages are loaded and cleaned:
-
-```python
-from langchain_community.document_loaders import WebBaseLoader
-import bs4
-
-loader = WebBaseLoader(
-    web_paths=("https://target-website.com/article",),
-    bs_kwargs=dict(
-        parse_only=bs4.SoupStrainer(
-            class_=("post-content", "post-title", "post-header")
-        )
-    )
+## App definition
+app = FastAPI(
+    title="Langchain Server",
+    version="1.0",
+    description="Simple API server using Langchain runnable Interfaces"
 )
-docs = loader.load()
+
+## Adding Chain Routes
+add_routes(app, chain, path="/chain")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 ```
-
-**Cleaning Steps Applied:**
-
-| Step | Tool | Effect |
-|---|---|---|
-| HTML Tag Stripping | BeautifulSoup | Removes `<script>`, `<style>`, nav elements |
-| Class Filtering | `SoupStrainer` | Targets only meaningful content divs |
-| Whitespace Normalisation | Implicit in `.get_text()` | Collapses multiple newlines/spaces |
-| Chunking | RecursiveCharacterTextSplitter | Standardises input length for embeddings |
-
-### 6.3 Embedding Normalisation
-
-`sentence-transformers` automatically L2-normalises all embeddings before storage, ensuring cosine similarity == dot product and numerically stable retrieval.
 
 ---
 
-## 7. ML Algorithms Used
+### Line-by-Line Walkthrough
 
-This project spans three categories of machine learning and AI:
+**Lines 1–8 — Imports:** `FastAPI` is the web framework. `langserve.add_routes` is the key function that automatically exposes an LCEL chain as REST endpoints. `uvicorn` is the ASGI server that runs FastAPI.
 
-### 7.1 Generative Language Modelling
+**Lines 10–12 — LLM Setup:** Identical to the notebook — load the API key from `.env` and initialize the Groq model.
 
-| Algorithm | Model | Task |
-|---|---|---|
-| Transformer (Decoder-only) | `llama-3.1-8b-instant` via Groq | Text generation, translation, Q&A |
-| Prompt Chaining (LCEL) | LangChain Expression Language | Multi-step pipeline orchestration |
-| Memory-Augmented Generation | RunnableWithMessageHistory | Stateful multi-turn conversation |
+**Lines 14–18 — Prompt Template:** Same `ChatPromptTemplate` as in the notebook. The template has two inputs: `{language}` (which language to translate to) and `{text}` (what to translate).
 
-### 7.2 Dense Retrieval (Information Retrieval ML)
+**Line 21 — Parser:** `StrOutputParser()` strips the `AIMessage` wrapper and returns a plain string.
 
-| Algorithm | Model | Task |
-|---|---|---|
-| Bi-Encoder Sentence Embedding | `all-MiniLM-L6-v2` (HuggingFace) | Maps text → 384-dim dense vector |
-| k-Nearest Neighbour (kNN) | ChromaDB HNSW Index | Top-k document retrieval |
-| Cosine Similarity | Chroma default metric | Ranking retrieved documents |
-| MMR (Maximal Marginal Relevance) | Optional in Chroma retriever | Diversity-aware retrieval |
+**Line 24 — The Chain:** `prompt_template | model | parser` — exactly the same three-step pipe chain as the notebook, now ready to be served.
 
-### 7.3 Query Contextualisation (Reformulation)
+**Lines 27–31 — FastAPI App:**
+```python
+app = FastAPI(
+    title="Langchain Server",
+    version="1.0",
+    description="Simple API server using Langchain runnable Interfaces"
+)
+```
+This creates the web application instance. The `title`, `version`, and `description` appear in the auto-generated Swagger UI at `http://127.0.0.1:8000/docs`.
 
-| Algorithm | Mechanism | Task |
-|---|---|---|
-| Zero-shot Prompt Classification | LLM-based | Decides if query needs context expansion |
-| Chain-of-Thought Reformulation | `create_history_aware_retriever` | Reformulates follow-up queries into standalone |
+**Lines 34–35 — Adding Routes:**
+```python
+add_routes(app, chain, path="/chain")
+```
+This is the magic line. `add_routes` from LangServe automatically creates **five endpoints** on `/chain`:
+- `POST /chain/invoke` — call the chain with a single input
+- `POST /chain/batch` — call the chain with multiple inputs in parallel
+- `POST /chain/stream` — call the chain and stream back the response token by token
+- `GET  /chain/input_schema` — get the JSON schema of valid inputs
+- `GET  /chain/output_schema` — get the JSON schema of the output
 
-### 7.4 TensorFlow / PyTorch Role
+You also get a built-in playground at `http://127.0.0.1:8000/chain/playground/`.
 
-| Library | Usage |
-|---|---|
-| **PyTorch** | Runtime backend for `sentence-transformers` embeddings (via `torch`) |
-| **TensorFlow** | Evaluation layer for embedding quality, token classification benchmarking |
+**Lines 37–38 — Server Launch:**
+```python
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+```
+`if __name__ == "__main__"` ensures this only runs when you execute `python serve.py` directly, not when the file is imported as a module. `uvicorn` is the production-grade ASGI server that handles concurrent HTTP requests.
+
+**To run:**
+```bash
+python serve.py
+# Then visit: http://127.0.0.1:8000/chain/playground/
+```
 
 ---
 
-## 8. Model Training & Testing Split
+## Project 3 — Stateful Chatbot with Memory (`1-chatbots.ipynb`)
 
-### 8.1 Embedding Model — Pre-trained (No Fine-tuning)
+**Goal:** Build a chatbot that remembers what was said earlier in the conversation, handles multi-language responses, and stays within token limits.
 
-The `all-MiniLM-L6-v2` model used in this project is a **pre-trained sentence transformer** and is not fine-tuned within this repo. Its published training/evaluation split was:
-
-| Split | Dataset | Size |
-|---|---|---|
-| Training | Combined NLI + SNLI + MultiNLI + MS-MARCO | ~1B sentence pairs |
-| Validation | STS Benchmark (dev) | 1,500 sentence pairs |
-| Test | STS Benchmark (test) | 1,379 sentence pairs |
-
-### 8.2 RAG Retrieval Evaluation Setup
-
-For evaluating retrieval quality within this project, the following protocol is recommended (and partially implemented):
-
-```python
-# Simulated Train/Test split for RAG evaluation
-from sklearn.model_selection import train_test_split
-
-# Sample 50 QA pairs derived from the scraped corpus
-all_qa_pairs = load_qa_pairs("qa_dataset.json")  # Ground truth
-train_qa, test_qa = train_test_split(all_qa_pairs, test_size=0.2, random_state=42)
-
-# Train split  → used to tune chunk_size, k, prompt templates
-# Test split   → used for final MRR, Hit@K, and faithfulness evaluation
-
-print(f"Train QA pairs : {len(train_qa)}")   # → 40
-print(f"Test QA pairs  : {len(test_qa)}")    # → 10
-```
-
-| Split | Size | Purpose |
-|---|---|---|
-| **Train** | 80% (40 pairs) | Chunk size tuning, prompt optimisation |
-| **Test** | 20% (10 pairs) | Final retrieval & generation quality |
-
-### 8.3 LLM Response Evaluation
-
-Since LLM outputs are generative (not classification), evaluation uses:
-
-| Metric | Tool | Description |
-|---|---|---|
-| ROUGE-L | `rouge-score` library | N-gram overlap with reference answer |
-| BERTScore | `bert-score` library | Semantic similarity via BERT embeddings |
-| Faithfulness | Manual / LLM-as-judge | Does answer stay grounded in retrieved context? |
-| Answer Relevancy | LLM-as-judge | Is the answer relevant to the question? |
+**Concepts introduced:** Multi-turn conversation state, `ChatMessageHistory`, `RunnableWithMessageHistory`, `MessagesPlaceholder`, token trimming with `trim_messages`, session isolation.
 
 ---
 
-## 9. TensorFlow Integration
-
-### 9.1 TensorFlow in the Embedding Evaluation Layer
-
-TensorFlow can be used alongside PyTorch in this pipeline for **post-hoc evaluation** of embedding quality and for computing classification metrics on retrieval outputs.
-
-#### 9.1.1 Setup
+### Section 1 — Naive Multi-Turn (No Memory)
 
 ```python
-import tensorflow as tf
-import numpy as np
-from langchain_huggingface import HuggingFaceEmbeddings
-
-# Load embeddings from ChromaDB
-embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-
-# Convert to TensorFlow tensor for metric computation
-query_vec  = tf.constant(embedding_model.embed_query("What is RAG?"),  dtype=tf.float32)
-doc_vecs   = tf.constant(vectorstore._collection.get(include=["embeddings"])["embeddings"], dtype=tf.float32)
+from langchain_core.messages import HumanMessage
+model.invoke([HumanMessage(content="Hi, my name is Bikash and I am a functional consultant")])
 ```
 
-#### 9.1.2 Cosine Similarity with TensorFlow
+This works for one message. But the model has no memory — every call is independent.
 
 ```python
-# TensorFlow cosine similarity
-query_norm = tf.nn.l2_normalize(query_vec, axis=0)
-doc_norms  = tf.nn.l2_normalize(doc_vecs,  axis=1)
-
-similarities = tf.linalg.matvec(doc_norms, query_norm)
-top_k_indices = tf.argsort(similarities, direction='DESCENDING')[:4]
-
-print("Top-4 document indices:", top_k_indices.numpy())
-print("Similarity scores     :", tf.gather(similarities, top_k_indices).numpy())
-```
-
-#### 9.1.3 TensorFlow-based Retrieval Classifier
-
-A lightweight binary classifier can be trained with TensorFlow to predict whether a retrieved document is **relevant (1)** or **irrelevant (0)** to a given query:
-
-```python
-import tensorflow as tf
-
-# Input: concatenated [query_embedding, doc_embedding, element-wise product] = 1152-dim
-# Output: binary relevance prediction
-
-model = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(1152,)),
-    tf.keras.layers.Dense(256, activation='relu'),
-    tf.keras.layers.Dropout(0.3),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(1,   activation='sigmoid')
+from langchain_core.messages import AIMessage
+model.invoke([
+    HumanMessage(content="Hi, my name is Bikash and I am a functional consultant"),
+    AIMessage(content="Nice to meet you, Bikash..."),
+    HumanMessage(content="Hey what's my name and what do I do?")
 ])
-
-model.compile(
-    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4),
-    loss      = 'binary_crossentropy',
-    metrics   = ['accuracy',
-                 tf.keras.metrics.Precision(name='precision'),
-                 tf.keras.metrics.Recall(name='recall'),
-                 tf.keras.metrics.AUC(name='auc')]
-)
-
-model.summary()
 ```
 
-**Model Architecture Summary:**
-
-```
-Model: "Retrieval Relevance Classifier"
-_________________________________________________________________
-Layer (type)          Output Shape         Param #
-=================================================================
-dense_1 (Dense)       (None, 256)          295,168
-dropout_1 (Dropout)   (None, 256)          0
-dense_2 (Dense)       (None, 128)          32,896
-dropout_2 (Dropout)   (None, 128)          0
-dense_3 (Dense)       (None, 1)            129
-=================================================================
-Total params:         328,193
-Trainable params:     328,193
-Non-trainable params: 0
-_________________________________________________________________
-```
-
-#### 9.1.4 Training the TF Classifier
-
-```python
-history = model.fit(
-    X_train, y_train,
-    validation_data = (X_val, y_val),
-    epochs          = 20,
-    batch_size      = 32,
-    callbacks = [
-        tf.keras.callbacks.EarlyStopping(patience=3, restore_best_weights=True),
-        tf.keras.callbacks.ReduceLROnPlateau(patience=2, factor=0.5)
-    ]
-)
-```
-
-**Training Progress (Representative Results):**
-
-| Epoch | Train Loss | Train Acc | Val Loss | Val Acc |
-|---|---|---|---|---|
-| 1 | 0.6821 | 0.5820 | 0.6654 | 0.6100 |
-| 5 | 0.4213 | 0.8120 | 0.4401 | 0.7950 |
-| 10 | 0.2876 | 0.8890 | 0.3105 | 0.8620 |
-| 15 | 0.1954 | 0.9250 | 0.2441 | 0.8980 |
-| 20 | 0.1632 | 0.9410 | 0.2203 | 0.9120 |
+The manual workaround — pass the entire conversation history as a list on every call. The LLM processes the full history and can answer "Your name is Bikash and you're a functional consultant." This works but becomes unmanageable as conversations grow. The next section automates it.
 
 ---
 
-## 10. Confusion Matrix & Classification Report
-
-### 10.1 Retrieval Relevance Classifier — Confusion Matrix
-
-The binary classifier (relevant vs. irrelevant document) achieves the following on the held-out test set (n=200):
-
-```
-Predicted →        Relevant    Irrelevant
-Actual ↓
-Relevant           [ 87 ]      [  8 ]
-Irrelevant         [ 10 ]      [ 95 ]
-```
-
-| | Predicted: Relevant | Predicted: Irrelevant |
-|---|---|---|
-| **Actual: Relevant** | **TP = 87** | **FN = 8** |
-| **Actual: Irrelevant** | **FP = 10** | **TN = 95** |
-
-### 10.2 TensorFlow Confusion Matrix Code
+### Section 2 — Automated Session Memory
 
 ```python
-import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-# Predict on test set
-y_pred_probs = model.predict(X_test)
-y_pred       = (y_pred_probs > 0.5).astype(int).flatten()
-
-# TensorFlow confusion matrix
-cm = tf.math.confusion_matrix(y_test, y_pred, num_classes=2).numpy()
-
-# Visualise
-plt.figure(figsize=(7, 5))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-            xticklabels=['Irrelevant', 'Relevant'],
-            yticklabels=['Irrelevant', 'Relevant'])
-plt.xlabel("Predicted Label")
-plt.ylabel("True Label")
-plt.title("Confusion Matrix — Retrieval Relevance Classifier")
-plt.tight_layout()
-plt.savefig("confusion_matrix.png", dpi=150)
-plt.show()
-```
-
-### 10.3 Detailed Classification Report
-
-```
-              precision    recall  f1-score   support
-
-   Irrelevant     0.922     0.905     0.913       105
-     Relevant     0.897     0.916     0.906        95
-
-     accuracy                         0.910       200
-    macro avg     0.910     0.911     0.910       200
- weighted avg     0.910     0.910     0.910       200
-```
-
----
-
-## 11. Accuracy, Precision, Recall & F1 Score
-
-### 11.1 Classification Metrics — Retrieval Classifier
-
-| Metric | Class: Relevant | Class: Irrelevant | Macro Avg | Weighted Avg |
-|---|---|---|---|---|
-| **Accuracy** | — | — | **91.0%** | **91.0%** |
-| **Precision** | 89.7% | 92.2% | 90.9% | 91.0% |
-| **Recall** | 91.6% | 90.5% | 91.0% | 91.0% |
-| **F1-Score** | 90.6% | 91.3% | 90.9% | 91.0% |
-| **AUC-ROC** | — | — | **0.967** | — |
-
-### 11.2 Metric Computations (Manual Verification)
-
-Using the confusion matrix values (TP=87, TN=95, FP=10, FN=8, N=200):
-
-```
-Accuracy  = (TP + TN) / N           = (87 + 95) / 200        = 0.910  →  91.0%
-Precision = TP / (TP + FP)          = 87 / (87 + 10)         = 0.897  →  89.7%
-Recall    = TP / (TP + FN)          = 87 / (87 + 8)          = 0.916  →  91.6%
-F1-Score  = 2 × (P × R) / (P + R)  = 2 × (0.897 × 0.916)
-                                       / (0.897 + 0.916)      = 0.906  →  90.6%
-Specificity = TN / (TN + FP)        = 95 / (95 + 10)         = 0.905  →  90.5%
-```
-
-### 11.3 RAG Retrieval Quality Metrics
-
-| Metric | Value | Description |
-|---|---|---|
-| **Hit Rate @ 1** | 78.0% | Correct doc in top-1 result |
-| **Hit Rate @ 4** | 94.0% | Correct doc in top-4 results |
-| **MRR** (Mean Reciprocal Rank) | 0.863 | Average reciprocal of correct doc rank |
-| **NDCG @ 4** | 0.891 | Normalised Discounted Cumulative Gain |
-| **Context Precision** | 87.5% | Retrieved chunks actually used in answer |
-| **Context Recall** | 91.2% | All relevant chunks retrieved |
-| **Answer Faithfulness** | 88.4% | Answer grounded in retrieved context |
-| **Answer Relevancy** | 91.7% | Answer addresses the question |
-
-### 11.4 LLM Generation Quality Metrics
-
-| Metric | Score | Notes |
-|---|---|---|
-| **ROUGE-1** | 0.612 | Unigram overlap with reference |
-| **ROUGE-2** | 0.438 | Bigram overlap with reference |
-| **ROUGE-L** | 0.581 | Longest common subsequence |
-| **BERTScore (F1)** | 0.874 | Semantic similarity to reference |
-
----
-
-## 12. Prediction Pipeline
-
-### 12.1 End-to-End Prediction Flow
-
-```python
-from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
-# Session store (in-memory)
 store = {}
 
-def get_session_history(session_id: str) -> ChatMessageHistory:
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
     if session_id not in store:
         store[session_id] = ChatMessageHistory()
     return store[session_id]
 
-# Wrap the RAG chain with persistent session history
+with_message_history = RunnableWithMessageHistory(model, get_session_history)
+```
+
+**Breaking this down:**
+
+`store = {}` — A simple Python dictionary acting as an in-memory session database, mapping session IDs to their history objects.
+
+`get_session_history(session_id)` — A lookup function. Given a session ID string, it returns the `ChatMessageHistory` for that session, creating a new one if this is the first message in that session. This is the key abstraction: LangChain will call this function automatically before every model invocation.
+
+`ChatMessageHistory` — An in-memory list of `HumanMessage` and `AIMessage` objects. It auto-appends every input and output to maintain the full conversation log.
+
+`RunnableWithMessageHistory(model, get_session_history)` — Wraps the model in a stateful shell. Before each call, it calls `get_session_history(session_id)` to get the history, prepends it to the input messages, and after the call, saves the new exchange into that history. The user never has to manage any of this manually.
+
+```python
+config = {"configurable": {"session_id": "chat1"}}
+
+response = with_message_history.invoke(
+    [HumanMessage(content="Hi, My favorite food is Paneer and I love it with Maggi masala.")],
+    config=config
+)
+```
+
+`config = {"configurable": {"session_id": "chat1"}}` — The session identifier. This is passed to `get_session_history` so it knows which conversation bucket to use. Changing to `"chat2"` starts a completely fresh, isolated conversation.
+
+```python
+config1 = {"configurable": {"session_id": "chat1"}}
+response = with_message_history.invoke(
+    [HumanMessage(content="What's my favorite food?")],
+    config=config1
+)
+```
+
+Because this uses the same `"chat1"` session ID, the previous message is already in the history. The model correctly responds that the favorite food is Paneer.
+
+---
+
+### Section 3 — Prompt Templates with Memory
+
+```python
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant and answer all the question with the best of your ability in {language}"),
+    MessagesPlaceholder(variable_name="messages")
+])
+
+chain = prompt | model
+```
+
+`MessagesPlaceholder(variable_name="messages")` — This is the critical piece. It inserts the entire conversation history at this position in the prompt template. When `RunnableWithMessageHistory` prepopulates the history, it goes into this slot. This lets you combine a static system prompt (persona, language settings) with the dynamic, growing conversation history.
+
+The chain is now `prompt | model` — no parser yet, because the next step wraps it in memory management.
+
+```python
+with_message_history = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="messages"
+)
+```
+
+`input_messages_key="messages"` — Tells `RunnableWithMessageHistory` which key in the input dict contains the messages to track. The chain now expects a dict like `{"messages": [...], "language": "Hindi"}`.
+
+```python
+config = {"configurable": {"session_id": "chat4"}}
+response = with_message_history.invoke(
+    {"messages": [HumanMessage(content="I love paneer")], "language": "Hindi"},
+    config=config
+)
+```
+
+The model now responds in Hindi (controlled by the `language` variable), and subsequent messages will also be in Hindi for this session.
+
+---
+
+### Section 4 — Token Trimming
+
+As conversations grow, they eventually exceed the model's context window limit. Token trimming prevents this.
+
+```python
+from langchain_core.messages import SystemMessage, trim_messages
+
+trimmer = trim_messages(
+    max_tokens=70,
+    strategy="last",
+    token_counter=model,
+    include_system=True,
+    allow_partial=False,
+    start_on="human"
+)
+```
+
+**Each parameter explained:**
+
+- `max_tokens=70` — Hard cap: keep the total token count at or below 70. In production you'd set this much higher (e.g. 4000 for a 4096-token model).
+- `strategy="last"` — When trimming, keep the *most recent* messages. Older messages get dropped first. (Alternative: `"first"` keeps the oldest messages.)
+- `token_counter=model` — Use the actual model to count tokens. This ensures accurate counting for the specific model being used, since different tokenizers count differently.
+- `include_system=True` — Never trim the `SystemMessage` — always keep the persona/instructions.
+- `allow_partial=False` — Don't cut a message halfway through. If a message would be partially trimmed, drop it entirely.
+- `start_on="human"` — After trimming, make sure the first remaining message is a `HumanMessage`. Avoids the LLM seeing an AI response without the prior human turn that prompted it.
+
+```python
+from operator import itemgetter
+from langchain_core.runnables import RunnablePassthrough
+
+chain = (
+    RunnablePassthrough.assign(messages=itemgetter("messages") | trimmer)
+    | prompt
+    | model
+)
+```
+
+This is a more advanced LCEL pattern:
+
+- `itemgetter("messages")` — Extracts just the `"messages"` key from the input dict
+- `| trimmer` — Runs the message list through the trimmer to reduce it
+- `RunnablePassthrough.assign(messages=...)` — Takes the full input dict and replaces just the `"messages"` key with the trimmed version, passing everything else unchanged
+- The result flows into `prompt` then `model`
+
+The trimmer runs *before* the prompt is formatted, so the formatted prompt never exceeds the token limit.
+
+```python
+with_message_history = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="messages"
+)
+```
+
+The final version wraps the trimming-enabled chain in session memory. Every turn now: loads history → trims to fit budget → formats prompt → calls model → saves result.
+
+---
+
+## Project 4 — Vector Store & Retriever (`vectorretriever.ipynb`)
+
+**Goal:** Store documents as vectors, query them by semantic meaning, and build a RAG pipeline.
+
+**Concepts introduced:** `Document`, `HuggingFaceEmbeddings`, `Chroma` vector store, `similarity_search`, retrievers, LCEL RAG chain.
+
+---
+
+### Section 1 — Creating Documents
+
+```python
+from langchain_core.documents import Document
+
+documents = [
+    Document(
+        page_content="Dogs are great companions, known for their loyalty and friendliness.",
+        metadata={"source": "mammal-pets-doc"},
+    ),
+    Document(
+        page_content="Cats are independent pets that often enjoy their own space.",
+        metadata={"source": "mammal-pets-doc"},
+    ),
+    Document(
+        page_content="Goldfish are popular pets for beginners, requiring relatively simple care.",
+        metadata={"source": "fish-pets-doc"},
+    ),
+    Document(
+        page_content="Parrots are intelligent birds capable of mimicking human speech.",
+        metadata={"source": "bird-pets-doc"},
+    ),
+    Document(
+        page_content="Rabbits are social animals that need plenty of space to hop around.",
+        metadata={"source": "mammal-pets-doc"},
+    ),
+]
+```
+
+`Document` is LangChain's standard data class for a piece of text. It has exactly two fields:
+
+- `page_content` — the actual text content to be embedded and searched
+- `metadata` — arbitrary key-value pairs for filtering and provenance tracking. Here, `"source"` identifies which document category the text came from.
+
+In real applications these documents come from PDFs, web pages, databases etc. Here they're hardcoded for demonstration.
+
+---
+
+### Section 2 — Embeddings
+
+```python
+import os
+from dotenv import load_dotenv
+load_dotenv()
+from langchain_groq import ChatGroq
+
+groq_api_key = os.getenv("GROQ_API_KEY")
+os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
+
+llm = ChatGroq(groq_api_key=groq_api_key, model="llama-3.1-8b-instant")
+```
+
+Note `os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")` — this re-exports the HuggingFace token into the environment so the `langchain_huggingface` library can find it.
+
+```python
+from langchain_huggingface import HuggingFaceEmbeddings
+embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+```
+
+`HuggingFaceEmbeddings` loads the `all-MiniLM-L6-v2` model from HuggingFace and runs it locally to generate embeddings. This model:
+- Converts any text into a 384-dimensional vector
+- Is small (~80MB) and fast
+- Has very good semantic understanding despite its size
+- Is free and runs on CPU without a GPU
+
+All documents and queries will pass through this model to get their vector representations before any similarity comparison.
+
+---
+
+### Section 3 — Building the Vector Store
+
+```python
+from langchain_chroma import Chroma
+
+vectorstore = Chroma.from_documents(documents, embedding=embeddings)
+```
+
+`Chroma.from_documents()` does three things in one call:
+1. Passes each `Document.page_content` through the `embeddings` model to get a 384-dim vector
+2. Stores those vectors (and the original text + metadata) in ChromaDB
+3. Returns a `Chroma` object ready for querying
+
+ChromaDB stores everything in-memory by default. For persistence, you'd add `persist_directory="./chroma_db"`.
+
+---
+
+### Section 4 — Querying the Vector Store
+
+```python
+vectorstore.similarity_search("cat")
+```
+
+**What happens inside:** The query `"cat"` is passed through the same `all-MiniLM-L6-v2` embedding model to get its vector. ChromaDB then computes the cosine similarity between that query vector and all stored document vectors and returns the top 4 most similar documents (default `k=4`).
+
+The result includes the Cats document (most similar) and likely the Dogs and Rabbits documents (mammal pets — semantically related), even though neither "dog" nor "rabbit" contains the word "cat". This is the power of semantic search over keyword search.
+
+```python
+await vectorstore.asimilarity_search("cat")
+```
+
+The async version — identical behavior but non-blocking, useful in async web frameworks.
+
+---
+
+### Section 5 — Retrievers (Two Approaches)
+
+VectorStore objects have powerful search methods, but they can't be plugged directly into LCEL chains because they don't implement the `Runnable` interface. Retrievers wrap them so they can.
+
+**Approach A — Manual Lambda Wrapper:**
+
+```python
+from langchain_core.runnables import RunnableLambda
+
+retriever = RunnableLambda(vectorstore.similarity_search).bind(k=1)
+retriever.batch(["cat", "dog"])
+```
+
+`RunnableLambda` wraps any Python callable as a LangChain Runnable. `.bind(k=1)` permanently attaches `k=1` as a parameter, so every call will only return the single best match. `.batch()` runs multiple queries in parallel.
+
+**Approach B — Native Conversion (Recommended):**
+
+```python
+retriever = vectorstore.as_retriever(
+    search_type="similarity",
+    search_kwargs={"k": 1}
+)
+
+retriever.batch(["cat", "dog"])
+```
+
+`vectorstore.as_retriever()` is the official, idiomatic way. It creates a `VectorStoreRetriever` object that implements the full `Runnable` interface. `search_type="similarity"` uses cosine similarity (the default and most common). `search_kwargs={"k": 1}` again caps results at 1 document per query. This approach is preferred because it's cleaner and supports more search strategies (e.g., `"mmr"` for Maximal Marginal Relevance).
+
+---
+
+### Section 6 — Building the RAG Chain
+
+```python
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+
+message = """
+Answer this question using the provided context only.
+
+{question}
+
+Context:
+{context}
+"""
+
+prompt = ChatPromptTemplate.from_messages([("human", message)])
+
+rag_chain = {"context": retriever, "question": RunnablePassthrough()} | prompt | llm
+
+response = rag_chain.invoke("tell me about dogs")
+print(response.content)
+```
+
+**Dissecting the chain's entry point:**
+
+```python
+{"context": retriever, "question": RunnablePassthrough()}
+```
+
+This is a dictionary of Runnables — LCEL's way of routing one input to multiple processors simultaneously. When `"tell me about dogs"` is passed to `.invoke()`:
+
+- `retriever` receives it and returns the relevant `Document` objects (fetched from ChromaDB)
+- `RunnablePassthrough()` receives it and passes it through unchanged
+
+So the dictionary produces: `{"context": [Document(...)], "question": "tell me about dogs"}`. This flows into:
+- `prompt` — formats the question and context into a human message
+- `llm` — generates the answer based only on the provided context
+
+This is a minimal but complete RAG pipeline.
+
+---
+
+## Project 5 — Conversational RAG Q&A (`conversationqa.ipynb`)
+
+**Goal:** Build a full RAG chatbot that loads real web content, answers questions based on that content, and remembers the entire conversation history.
+
+**Concepts introduced:** `WebBaseLoader`, `RecursiveCharacterTextSplitter`, `create_retrieval_chain`, `create_stuff_documents_chain`, `create_history_aware_retriever`, `RunnableWithMessageHistory` for RAG, automated session store.
+
+---
+
+### Section 1 — Setup
+
+```python
+import os
+from dotenv import load_dotenv
+load_dotenv()
+from langchain_groq import ChatGroq
+groq_api_key = os.getenv("GROQ_API_KEY")
+os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
+llm = ChatGroq(groq_api_key=groq_api_key, model="llama-3.1-8b-instant")
+
+from langchain_chroma import Chroma
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_classic.chains import create_retrieval_chain
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+
+embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+```
+
+All the imports gathered at the top. This notebook uses `langchain_classic` (the older chain-building API) alongside `langchain_core` (the newer LCEL API).
+
+---
+
+### Section 2 — Loading Web Content
+
+```python
+import bs4
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+
+docs = loader.load()
+```
+
+`WebBaseLoader` fetches the webpage at the URL and uses BeautifulSoup4 to parse the HTML. The important parameters:
+
+- `web_paths=("https://...",)` — a tuple of URLs to scrape (can be multiple)
+- `bs_kwargs=dict(parse_only=...)` — passes arguments directly to BeautifulSoup. This is a filter
+- `bs4.SoupStrainer(class_=("post-content", "post-title", "post-header"))` — tells BeautifulSoup to only extract HTML elements that have these CSS class names
+
+This selective extraction is crucial — without it, you'd get navigation bars, footers, ads etc. mixed into your documents, degrading RAG quality. Only the actual blog post content is extracted.
+
+The target URL is Lilian Weng's famous "LLM Powered Autonomous Agents" blog post — a 5000+ word article about AI agent architectures.
+
+---
+
+### Section 3 — Chunking & Indexing
+
+```python
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+splits = text_splitter.split_documents(docs)
+
+vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
+retriever = vectorstore.as_retriever()
+```
+
+**Why chunking is necessary:** The blog post is ~5000 words — far too long to embed as a single vector or inject wholesale into an LLM prompt. It must be split into smaller, semantically coherent pieces.
+
+`RecursiveCharacterTextSplitter`:
+- `chunk_size=1000` — each chunk is at most 1000 characters
+- `chunk_overlap=200` — consecutive chunks share 200 characters of overlap
+
+The overlap prevents key concepts from being split across chunks where neither chunk contains enough context on its own. The "recursive" part means it tries to split on natural boundaries in order: paragraphs (`\n\n`), then newlines (`\n`), then sentences (`. `), then words (` `), then characters. It only moves to smaller splits if the chunk would otherwise exceed `chunk_size`.
+
+After splitting, all chunks are embedded and stored in ChromaDB, and a retriever is created in one line.
+
+---
+
+### Section 4 — Basic RAG Chain
+
+```python
+system_prompt = (
+    "You are an assistant for question-answering tasks. "
+    "Use the following pieces of retrieved context to answer "
+    "the question. If you don't know the answer, say that you "
+    "don't know. Use three sentences maximum and keep the answer concise."
+    "\n\n"
+    "{context}"
+)
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", system_prompt),
+    ("human", "{input}"),
+])
+```
+
+The system prompt explicitly instructs the model to:
+- Only use the retrieved context (not its own training knowledge)
+- Admit ignorance if the context doesn't contain the answer
+- Keep answers short (3 sentences max)
+
+The `{context}` placeholder will be filled with the retrieved document chunks. The `{input}` placeholder will receive the user's question.
+
+```python
+question_answer_chain = create_stuff_documents_chain(llm, prompt)
+rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+```
+
+`create_stuff_documents_chain` — Creates a chain that "stuffs" (concatenates) the retrieved documents into the `{context}` slot of the prompt. All retrieved chunks are joined into one big context string and sent to the LLM.
+
+`create_retrieval_chain` — Combines the retriever and the QA chain. When you invoke it with `{"input": "question"}`, it:
+1. Passes the question to the retriever → gets relevant document chunks
+2. Passes the question + chunks to the QA chain → LLM generates answer
+3. Returns `{"input": ..., "context": ..., "answer": ...}`
+
+```python
+response = rag_chain.invoke({"input": "what is self reflection?"})
+response['answer']
+```
+
+The response dict has `"answer"` (the LLM's text) and `"context"` (the documents that were retrieved). This RAG chain has no memory — each invocation is completely independent.
+
+---
+
+### Section 5 — History-Aware Retriever
+
+The basic RAG chain fails for follow-up questions. If the user asks "What is self-reflection?" and then asks "How do we achieve it?" — the word "it" has no standalone meaning for the retriever. It needs to see the previous question to understand what "it" refers to.
+
+```python
+from langchain_classic.chains import create_history_aware_retriever
+from langchain_core.prompts import MessagesPlaceholder
+
+contextualize_q_system_prompt = (
+    "Given a chat history and the latest user question "
+    "which might reference context in the chat history, "
+    "formulate a standalone question which can be understood "
+    "without the chat history. Do NOT answer the question, "
+    "just reformulate it if needed and otherwise return it as is."
+)
+
+contextualize_q_prompt = ChatPromptTemplate.from_messages([
+    ("system", contextualize_q_system_prompt),
+    MessagesPlaceholder("chat_history"),
+    ("human", "{input}"),
+])
+```
+
+This prompt tells the LLM to act as a question rewriter. Given the chat history and the current question, it should rephrase the question to be self-contained. For example:
+- History: Q: "What is self-reflection?" A: "Self-reflection is..."
+- Current: "How do we achieve it?"
+- Rewritten: "How do we achieve self-reflection?"
+
+The rewritten standalone question is then what gets sent to the vector store retriever.
+
+```python
+history_aware_retriever = create_history_aware_retriever(
+    llm, retriever, contextualize_q_prompt
+)
+```
+
+`create_history_aware_retriever` chains together: LLM (question rewriter) → original retriever. If there's no chat history, the question is passed directly to the retriever unchanged. If there IS history, the LLM first rewrites it, then the retriever uses the rewritten question.
+
+---
+
+### Section 6 — Full Conversational RAG Chain
+
+```python
+qa_prompt = ChatPromptTemplate.from_messages([
+    ("system", system_prompt),
+    MessagesPlaceholder("chat_history"),
+    ("human", "{input}"),
+])
+```
+
+The QA prompt is rebuilt to include `MessagesPlaceholder("chat_history")`. This means the LLM sees the full conversation history when generating its answer — it can refer back to previous answers for coherence.
+
+```python
+question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+```
+
+Identical structure to before, but now uses the `history_aware_retriever` and the conversation-aware `qa_prompt`.
+
+---
+
+### Section 7 — Manual History Management
+
+```python
+from langchain_core.messages import AIMessage, HumanMessage
+
+chat_history = []
+question = "What is Self-Reflection"
+response1 = rag_chain.invoke({"input": question, "chat_history": chat_history})
+
+chat_history.extend([
+    HumanMessage(content=question),
+    AIMessage(content=response1["answer"])
+])
+
+question2 = "Tell me more about it?"
+response2 = rag_chain.invoke({"input": question2, "chat_history": chat_history})
+print(response2['answer'])
+```
+
+Here the history is managed manually — the developer is responsible for appending each exchange to `chat_history`. The second question "Tell me more about it?" works correctly because `chat_history` contains the context about Self-Reflection from the first turn. This is explicit but tedious for real applications.
+
+---
+
+### Section 8 — Automated Session History (Production Pattern)
+
+```python
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
+
+store = {}
+
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()
+    return store[session_id]
+
 conversational_rag_chain = RunnableWithMessageHistory(
     rag_chain,
     get_session_history,
-    input_messages_key  = "input",
-    history_messages_key= "chat_history",
-    output_messages_key = "answer",
+    input_messages_key="input",
+    history_messages_key="chat_history",
+    output_messages_key="answer",
 )
+```
 
-# --- PREDICTION ---
-session_id = "user_001"
+This is the same session store pattern from the chatbot notebook, now applied to the full RAG chain.
 
-# Turn 1
-response_1 = conversational_rag_chain.invoke(
+The three key parameters:
+- `input_messages_key="input"` — which key in the input dict is the user's current message
+- `history_messages_key="chat_history"` — which key the history should be injected into (matches the `MessagesPlaceholder("chat_history")` in the prompts)
+- `output_messages_key="answer"` — which key of the output dict contains the assistant's response (for saving to history)
+
+```python
+conversational_rag_chain.invoke(
     {"input": "What is Task Decomposition?"},
-    config={"configurable": {"session_id": session_id}}
-)
-print("Answer 1:", response_1["answer"])
+    config={"configurable": {"session_id": "abc123"}}
+)["answer"]
+```
 
-# Turn 2 (leverages Turn 1 history)
-response_2 = conversational_rag_chain.invoke(
+First question in session `"abc123"`. The `store["abc123"]` is empty initially, so the history-aware retriever passes the question directly to the vector store.
+
+```python
+conversational_rag_chain.invoke(
     {"input": "What are common ways of doing it?"},
-    config={"configurable": {"session_id": session_id}}
-)
-print("Answer 2:", response_2["answer"])
+    config={"configurable": {"session_id": "abc123"}}
+)["answer"]
 ```
 
-### 12.2 Translation Prediction (Project 1)
+Second question. The wrapper automatically:
+1. Loads the history from `store["abc123"]` (contains previous Q&A)
+2. Passes it to the `history_aware_retriever`, which rewrites "What are common ways of doing it?" → "What are common ways of achieving task decomposition?"
+3. Retrieves relevant chunks from the vector store using the standalone question
+4. Injects the chunks + full history into the QA prompt
+5. LLM generates a contextually coherent answer
+6. Saves the new Q&A pair to `store["abc123"]`
 
 ```python
-# serve.py — FastAPI prediction endpoint
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_groq import ChatGroq
-
-model  = ChatGroq(model="llama-3.1-8b-instant")
-parser = StrOutputParser()
-
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "Translate the following into {language}:"),
-    ("user", "{text}")
-])
-
-chain = prompt | model | parser
-
-# Predict
-result = chain.invoke({"language": "French", "text": "Hello, how are you?"})
-# → "Bonjour, comment allez-vous?"
+store
 ```
 
-### 12.3 TensorFlow Relevance Prediction
+At this point `store["abc123"]` contains the full conversation log as a `ChatMessageHistory` object. Multiple sessions can run simultaneously with complete isolation.
 
-```python
-# Single inference
-query_emb = embedding_model.embed_query("What is LangChain?")
-doc_emb   = embedding_model.embed_documents(["LangChain is a framework..."])[0]
-product   = np.array(query_emb) * np.array(doc_emb)
+---
 
-features  = np.concatenate([query_emb, doc_emb, product]).reshape(1, -1)
-score     = model.predict(features)[0][0]
+## How the Projects Build on Each Other
 
-print(f"Relevance Score : {score:.4f}")   # e.g. 0.9312
-print(f"Prediction      : {'Relevant' if score > 0.5 else 'Irrelevant'}")
+```
+simplellmLCEL.ipynb
+   └── LLM + prompt + parser → LCEL pipe chain
+            ↓
+serve.py
+   └── Adds: FastAPI + LangServe → REST API from LCEL chain
+            ↓
+1-chatbots.ipynb
+   └── Adds: ChatMessageHistory + RunnableWithMessageHistory → stateful memory
+       Adds: MessagesPlaceholder → dynamic history injection into prompts
+       Adds: trim_messages → token budget management
+            ↓
+vectorretriever.ipynb
+   └── Adds: Document + HuggingFaceEmbeddings → semantic vectors
+       Adds: ChromaDB → vector storage and similarity search
+       Adds: as_retriever() → LCEL-compatible retrieval
+       Adds: RAG chain pattern → context-aware answering
+            ↓
+conversationqa.ipynb
+   └── Adds: WebBaseLoader + RecursiveCharacterTextSplitter → real document ingestion
+       Adds: create_history_aware_retriever → context-aware query rewriting
+       Adds: RunnableWithMessageHistory + RAG → full conversational RAG system
 ```
 
 ---
 
-## 13. Model Evaluation Summary
+## Architecture Diagrams
 
-### 13.1 Overall Performance Dashboard
-
-| Component | Task | Best Metric | Score |
-|---|---|---|---|
-| `all-MiniLM-L6-v2` | Semantic Embedding | STS Pearson | 0.891 |
-| ChromaDB kNN Retriever | Document Retrieval | Hit Rate @ 4 | 94.0% |
-| TF Relevance Classifier | Binary Classification | Accuracy | 91.0% |
-| TF Relevance Classifier | Binary Classification | AUC-ROC | 0.967 |
-| RAG Pipeline (full) | Answer Generation | BERTScore F1 | 0.874 |
-| Conversational Q&A | Multi-turn Coherence | Answer Relevancy | 91.7% |
-| LLM Translation | Language Translation | BLEU-4 | 0.712 |
-
-### 13.2 Evaluation Code (TensorFlow)
-
-```python
-# Full evaluation on test set
-results = model.evaluate(X_test, y_test, verbose=1)
-
-print(f"\n{'='*40}")
-print(f"  Test Loss       : {results[0]:.4f}")
-print(f"  Test Accuracy   : {results[1]*100:.2f}%")
-print(f"  Test Precision  : {results[2]*100:.2f}%")
-print(f"  Test Recall     : {results[3]*100:.2f}%")
-print(f"  Test AUC        : {results[4]:.4f}")
-print(f"{'='*40}")
-```
-
-**Expected Output:**
+### Complete Conversational RAG Architecture
 
 ```
-========================================
-  Test Loss       : 0.2203
-  Test Accuracy   : 91.00%
-  Test Precision  : 90.95%
-  Test Recall     : 91.05%
-  Test AUC        : 0.9670
-========================================
+USER QUESTION: "What are common ways of doing it?"
+                    │
+                    ▼
+         ┌─────────────────────────┐
+         │  RunnableWithMessage    │  ← loads session history from store{}
+         │  History Wrapper        │
+         └──────────┬──────────────┘
+                    │
+                    ▼ {input, chat_history}
+    ┌───────────────────────────────────────┐
+    │     History-Aware Retriever           │
+    │  ┌──────────────────────────────────┐ │
+    │  │ If chat_history not empty:       │ │
+    │  │   LLM rewrites question to       │ │
+    │  │   standalone form:               │ │
+    │  │   "What are common ways of       │ │
+    │  │    achieving task decomposition?"│ │
+    │  └──────────────────────────────────┘ │
+    │                    │                  │
+    │                    ▼                  │
+    │  ┌──────────────────────────────────┐ │
+    │  │   ChromaDB Vector Store          │ │
+    │  │   similarity_search(rewritten q) │ │
+    │  │   → [chunk1, chunk2, chunk3]     │ │
+    │  └──────────────────────────────────┘ │
+    └───────────────────────────────────────┘
+                    │
+                    ▼ {input, chat_history, context=[chunks]}
+    ┌───────────────────────────────────────┐
+    │   create_stuff_documents_chain        │
+    │   Prompt:                             │
+    │     system: "Use context to answer.  │
+    │              {context}"               │
+    │     chat_history: [Q1, A1, ...]      │
+    │     human: "What are common ways...?"│
+    │                    │                  │
+    │                    ▼                  │
+    │            Groq LLaMA 3.1 8B         │
+    └───────────────────────────────────────┘
+                    │
+                    ▼
+              FINAL ANSWER
+                    │
+                    ▼
+         store["abc123"].add_messages(Q, A)  ← auto-saved
 ```
 
-### 13.3 Learning Curves
-
-```python
-import matplotlib.pyplot as plt
-
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
-# Accuracy
-axes[0].plot(history.history['accuracy'],     label='Train Accuracy', linewidth=2)
-axes[0].plot(history.history['val_accuracy'], label='Val Accuracy',   linewidth=2, linestyle='--')
-axes[0].set_title('Model Accuracy over Epochs')
-axes[0].set_xlabel('Epoch')
-axes[0].set_ylabel('Accuracy')
-axes[0].legend()
-axes[0].grid(True, alpha=0.3)
-
-# Loss
-axes[1].plot(history.history['loss'],     label='Train Loss', linewidth=2)
-axes[1].plot(history.history['val_loss'], label='Val Loss',   linewidth=2, linestyle='--')
-axes[1].set_title('Model Loss over Epochs')
-axes[1].set_xlabel('Epoch')
-axes[1].set_ylabel('Loss')
-axes[1].legend()
-axes[1].grid(True, alpha=0.3)
-
-plt.tight_layout()
-plt.savefig("learning_curves.png", dpi=150)
-plt.show()
-```
-
----
-
-## 14. Environment Setup & Installation
-
-### 14.1 Prerequisites
-
-- Python 3.10+
-- Node.js (optional, for LangServe UI)
-- Groq API Key → [https://console.groq.com](https://console.groq.com)
-- LangSmith API Key → [https://smith.langchain.com](https://smith.langchain.com)
-
-### 14.2 Setup Steps
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/BikashBIOS/GenAI-Projects.git
-cd GenAI-Projects
-
-# 2. Create and activate virtual environment
-python -m venv genaienv
-source genaienv/bin/activate        # Linux/macOS
-# genaienv\Scripts\activate         # Windows
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Create .env file
-touch .env
-```
-
-### 14.3 `.env` File Template
-
-```env
-# LangSmith (for tracing)
-LANGCHAIN_API_KEY=lsv2_pt_your_key_here
-LANGCHAIN_PROJECT=GenAI-Projects
-LANGCHAIN_TRACING_V2=true
-
-# Groq (LLM backend)
-GROQ_API_KEY=gsk_your_key_here
-
-# HuggingFace (for embeddings, optional)
-HUGGINGFACEHUB_API_TOKEN=hf_your_token_here
-```
-
-### 14.4 Dependencies (`requirements.txt`)
+### LCEL Pipe Chain Data Flow
 
 ```
-pandas
-numpy
-ipykernel
-langchain
-langsmith
-python-dotenv
-langchain_groq
-langchain_core
-fastapi
-uvicorn
-langserve
-sse_starlette
-langchain_community
-langchain_chroma
-langchain_huggingface
-sentence-transformers
-torch
-bs4
-langchain_classic
-tensorflow          # For evaluation layer
-scikit-learn        # For train/test split & metrics
-matplotlib          # For visualisations
-seaborn             # For confusion matrix heatmap
-rouge-score         # For ROUGE evaluation
-bert-score          # For BERTScore evaluation
-```
+prompt | model | parser
 
-### 14.5 Running the Projects
-
-```bash
-# Run Jupyter Notebooks
-jupyter notebook
-
-# Run FastAPI Server (Project 1)
-python serve.py
-# → Server at http://localhost:8000
-# → Chain endpoint: http://localhost:8000/chain
-# → LangServe playground: http://localhost:8000/chain/playground
+Input dict: {"language": "French", "text": "Hello"}
+    │
+    ▼
+ChatPromptTemplate
+    Fills {language} and {text} slots
+    Produces: ChatPromptValue
+    [SystemMessage("Translate to French:"), HumanMessage("Hello")]
+    │
+    ▼
+ChatGroq (LLaMA 3.1 8B via Groq API)
+    Sends messages to API
+    Produces: AIMessage(content="Bonjour", usage_metadata={...})
+    │
+    ▼
+StrOutputParser
+    Extracts .content from AIMessage
+    Produces: "Bonjour"
 ```
 
 ---
 
-## 15. Project-by-Project Breakdown
-
-### Project 1 — Simple LCEL Translation App (`simplellmLCEL.ipynb` + `serve.py`)
-
-| Aspect | Details |
-|---|---|
-| **Task** | English text → Any language translation |
-| **LLM** | `llama-3.1-8b-instant` via Groq |
-| **Chain** | `prompt \| model \| parser` (LCEL pipe syntax) |
-| **API** | FastAPI + LangServe at `/chain` |
-| **Input** | `{ "text": "...", "language": "French" }` |
-| **Output** | Translated string |
-| **Evaluation** | BLEU-4: 0.712, METEOR: 0.681 |
-
-### Project 2 — Stateful Chatbot (`1-chatbots.ipynb`)
-
-| Aspect | Details |
-|---|---|
-| **Task** | Multi-turn conversational chat with memory |
-| **Memory** | `RunnableWithMessageHistory` + `ChatMessageHistory` |
-| **Trimming** | `trim_messages(max_tokens=65536, strategy="last")` |
-| **Prompt** | `ChatPromptTemplate` with system + history + human roles |
-| **Evaluation** | Multi-turn coherence: 91.7%, Context retention: 88.3% |
-
-### Project 3 — Vector Store & Retriever (`vectorretriever.ipynb`)
-
-| Aspect | Details |
-|---|---|
-| **Task** | Build a semantic document search engine |
-| **Embeddings** | `all-MiniLM-L6-v2` (384-dim) |
-| **Vector Store** | ChromaDB (in-memory) |
-| **Retrieval** | Top-k similarity search, similarity score filtering |
-| **Evaluation** | Hit Rate @4: 94.0%, MRR: 0.863 |
-
-### Project 4 — Conversational RAG Q&A (`conversationqa.ipynb`)
-
-| Aspect | Details |
-|---|---|
-| **Task** | Q&A over web documents with memory |
-| **Data Source** | Live web scraping via BeautifulSoup + WebBaseLoader |
-| **Pipeline** | Contextualise → Retrieve → Generate (full RAG) |
-| **History** | Session-based with `InMemoryChatMessageHistory` |
-| **Evaluation** | Answer Faithfulness: 88.4%, Answer Relevancy: 91.7% |
-
----
-
-## 16. Key Findings & Conclusions
-
-### 16.1 Technical Insights
-
-| Finding | Detail |
-|---|---|
-| **LCEL Pipe Syntax** | Dramatically simplifies chain composition and is preferred over legacy `LLMChain` |
-| **Chunk Overlap** | 200-char overlap significantly improves retrieval across paragraph boundaries |
-| **Message Trimming** | Essential for long sessions; `strategy="last"` with `include_system=True` is optimal |
-| **ChromaDB + MiniLM** | Provides excellent retrieval quality with minimal infrastructure overhead |
-| **Session History** | `RunnableWithMessageHistory` cleanly separates state management from chain logic |
-
-### 16.2 Retrieval Quality Analysis
-
-The most impactful factor for RAG quality is **chunk size and overlap**:
-
-| chunk_size | chunk_overlap | Hit Rate @4 | Answer Faithfulness |
-|---|---|---|---|
-| 500 | 0 | 81.0% | 79.2% |
-| 1000 | 0 | 88.0% | 84.1% |
-| 1000 | 200 | **94.0%** | **88.4%** |
-| 2000 | 200 | 91.5% | 86.7% |
-
-### 16.3 Final Model Scores at a Glance
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│              FINAL EVALUATION SCORECARD                          │
-├──────────────────────────┬───────────────────────────────────────┤
-│  Metric                  │  Score                                │
-├──────────────────────────┼───────────────────────────────────────┤
-│  Overall Accuracy        │  91.00%                               │
-│  Precision               │  89.70%                               │
-│  Recall                  │  91.60%                               │
-│  F1-Score                │  90.60%                               │
-│  AUC-ROC                 │  0.967                                │
-│  Hit Rate @ 4            │  94.00%                               │
-│  MRR                     │  0.863                                │
-│  BERTScore (F1)          │  0.874                                │
-│  Answer Faithfulness     │  88.40%                               │
-│  Answer Relevancy        │  91.70%                               │
-│  BLEU-4 (Translation)    │  0.712                                │
-└──────────────────────────┴───────────────────────────────────────┘
-```
-
-### 16.4 Future Enhancements
-
-- Fine-tune `all-MiniLM-L6-v2` on domain-specific data for higher retrieval precision
-- Add HyDE (Hypothetical Document Embedding) for improved query expansion
-- Integrate LangSmith evaluation traces for automated regression testing
-- Deploy with streaming responses for real-time UX
-- Add multi-modal support (PDFs, images) via LangChain document loaders
-- Migrate to a persistent vector store (Pinecone / Weaviate) for production scale
-
----
-
-## 📚 References
-
-- [LangChain Documentation](https://python.langchain.com/docs/)
-- [Groq Cloud API](https://console.groq.com/docs/openai)
-- [ChromaDB Documentation](https://docs.trychroma.com/)
-- [HuggingFace Sentence Transformers](https://www.sbert.net/)
-- [TensorFlow Keras API](https://www.tensorflow.org/api_docs/python/tf/keras)
-- [RAGAS — RAG Evaluation Framework](https://docs.ragas.io/)
-- [LangSmith Tracing](https://smith.langchain.com/docs/)
-
----
-
-*Generated by Claude (Anthropic) · Based on repository analysis of [BikashBIOS/GenAI-Projects](https://github.com/BikashBIOS/GenAI-Projects)*
+*Built with [LangChain](https://python.langchain.com/), [Groq](https://console.groq.com/), [HuggingFace](https://huggingface.co/), [ChromaDB](https://www.trychroma.com/), and [FastAPI](https://fastapi.tiangolo.com/).*
